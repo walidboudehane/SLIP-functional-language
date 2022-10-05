@@ -1,0 +1,17 @@
+################## Comprendre la donnee ##############################
+(let ((y 10) ((div2 x) (/ x 2))) (div2 y))
+
+* écrire une fonction s2l qui va “éliminer” le sucre syntaxique
+################## Partie importantes du code ########################
+
+
+
+################## Ecrire un rapport ##################################
+
+**** Problemes rencontrees ***
+
+*** Surprises ***
+
+*** choix qu'on a du faire ***
+
+*** options qu'on a rejetes ***

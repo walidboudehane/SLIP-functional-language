@@ -8,7 +8,13 @@
 
 ################## Ecrire un rapport ##################################
 
+- On a fait une recherche sur lisp pour pouvoir comprendre le comportement de slip qui est assez similaire a lisp.
+- comprehension de l'analyseur lexical 
+- comprehension de l'analyseur syntaxique
+- au debut nous avions pas compris la relation entre les Sexp, Lexp, Dexp et eval mais avec plusieur lectures de l'enonce et du code fourni et un peu d'essai et d'erreur on est arrive a comprendre la relation chainee entre eux ...
+
 **** Problemes rencontrees ***
+- comprehension de la fonction match
 
 *** Surprises ***
 

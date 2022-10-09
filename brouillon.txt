@@ -1,0 +1,30 @@
+(add e1 e2) --> x:xs  \\\ 1:[2,3] [1,2]:3
+(list e1 e2) --> [e1,e2]
+(nil 1) --> [1]
+
+(match (add 1 2) (nil 1) ((add x y) (+ x y)))
+
+(match (1 2) (1) )    
+
+(let (((even xs) (match xs (nil 0) ((add x xs) (odd xs)))) ((odd xs) (match xs (nil 1) ((add x xs) (even xs))))) (odd (list 2 3 4)))
+
+
+(/ (* (- 68 32) 5) 9)
+--     ==>
+-- Scons (Ssym "/")
+--       (Scons (Scons (Ssym "*")
+--                     (Scons (Scons (Ssym "-")
+--                                   (Scons (Snum 68)
+--                                          (Scons (Snum 32) Snil)))
+--                            (Scons (Snum 5) Snil)))
+--              (Scons (Snum 9) Snil))
+
+
+x = 45 ===> env -> [(x,45)]
+y = 2 ===> env -> [(y,2),(x,45)]
+z = 68 ===> env -> [(z,68),(y,2),(x,45)]
+
+Sexp x y => x + y
+Lexp Llambda( x (Llambda y (Ladd (Lref "x") (Lref "y"))))
+Dexp Dlambda( Dlambda (Dadd (Dref 2) (Dref 1)))
+eval (+ 2 45) == 2 + 45

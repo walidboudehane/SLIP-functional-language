@@ -194,6 +194,7 @@ s2l :: Sexp -> Lexp
 s2l (Snum n) = Lnum n
 s2l (Ssym "nil") = Lnil
 s2l (Ssym s) = Lref s
+s2l Scons (Ssym s)(Scons (Snum e1)(Scons (Snum e2) Snil)) = 
 -- ¡¡ COMPLETER !!
 s2l se = error ("Malformed Sexp: " ++ (showSexp se))
 
@@ -227,6 +228,8 @@ env0 = [("+", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x + y)))),
         ("/", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x `div` y)))),
         ("-", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x - y))))]
 
+
+
 ---------------------------------------------------------------------------
 -- Représentation intermédiaire Dexp                                     --
 ---------------------------------------------------------------------------
@@ -256,17 +259,34 @@ data Dexp = Dnum Int            -- Constante entière.
 -- Le premier argument contient la liste des variables du contexte.
 l2d :: [Var] -> Lexp -> Dexp
 l2d _ (Lnum n) = Dnum n
+l2d _ (Lref "nil") = Dnil
+l2d env0Var (Lref s) = Dref (findIndexVar env0Var [0,1..] s)
 -- ¡¡ COMPLETER !!
 
+env0Var :: [Var]
+env0Var = map fst env0
+
+findIndexVar :: [Var] -> [Int] -> Var -> Int
+findIndexVar [] _ _ = -1
+findIndexVar env0Var (x:xs) identifiant
+    | env0Var !! x == identifiant = x
+    | otherwise = findIndexVar env0Var xs identifiant
 ---------------------------------------------------------------------------
 -- Évaluateur                                                            --
 ---------------------------------------------------------------------------
 
 -- Le premier argument contient la liste des valeurs des variables du contexte,
 -- dans le même ordre que ces variables ont été passées à `l2d`.
+env0Val :: [Value]
+env0Val = map snd env0
+
 eval :: [Value] -> Dexp -> Value
 eval _ (Dnum n) = Vnum n
+eval _ (Dnil) = Vnil
+eval env0Val (Dref s) = env0Val !! s
 -- ¡¡ COMPLETER !!
+
+
                   
 ---------------------------------------------------------------------------
 -- Toplevel                                                              --

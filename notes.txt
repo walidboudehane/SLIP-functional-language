@@ -13,11 +13,17 @@
 - comprehension de l'analyseur syntaxique
 - au debut nous avions pas compris la relation entre les Sexp, Lexp, Dexp et eval mais avec plusieur lectures de l'enonce et du code fourni et un peu d'essai et d'erreur on est arrive a comprendre la relation chainee entre eux ...
 
+
 **** Problemes rencontrees ***
 - comprehension de la fonction match
 
+
+
 *** Surprises ***
 
+- nous n'avions pas remarque que l2d utilisait [Var] et que eval utilisait [Val], nous croyons que c'etait comme nous faisons dans les demo et que nous utilisions des Env directement, mais apres quelques message d'erreur du compilateur nous avons remarque qu'il ne falait pas utiliser des Env dans l2d et eval
+
 *** choix qu'on a du faire ***
+- Pour trouver les indices des variables dans l'environement nous avons utilisé une fonction auxiliaire findIndexVar mais nous avons opté a mettre une liste d'entiers prédéfinie pour relier chaque variable a un index (meme si on sait que ce n'est pas vraiment faisable mais c'est tout ce qu'on a trouvé pour le moment histoire de ne pas perdre d'avantage de temps)
 
 *** options qu'on a rejetes ***

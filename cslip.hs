@@ -175,6 +175,31 @@ showSexp e = showSexp' e ""
 -- Représentation intermédiaire L(ambda)exp(ression)                     --
 ---------------------------------------------------------------------------
 
+-- #################################################
+--data Sexp = Snil                        -- La liste vide
+--          | Scons Sexp Sexp             -- Une paire
+--          | Ssym String                 -- Un symbole
+--          | Snum Int                    -- Un entier
+          -- Génère automatiquement un pretty-printer et une fonction de
+          -- comparaison structurelle.
+--          deriving (Show, Eq)
+-- ###################################################
+-- Exemples:
+-- (+ 2 3) == (+ . (2 . (3 . ())))
+--         ==> Scons (Ssym "+")
+--                   (Scons (Snum 2)
+--                          (Scons (Snum 3) Snil))
+--
+-- (/ (* (- 68 32) 5) 9)
+--     ==>
+-- Scons (Ssym "/")
+--       (Scons (Scons (Ssym "*")
+--                     (Scons (Scons (Ssym "-")
+--                                   (Scons (Snum 68)
+--                                          (Scons (Snum 32) Snil)))
+--                            (Scons (Snum 5) Snil)))
+--              (Scons (Snum 9) Snil))
+
 type Var = String
 
 data Lexp = Lnum Int            -- Constante entière.
@@ -191,10 +216,13 @@ data Lexp = Lnum Int            -- Constante entière.
 
 -- Première passe simple qui analyse un Sexp et construit une Lexp équivalente.
 s2l :: Sexp -> Lexp
-s2l (Snum n) = Lnum n
-s2l (Ssym "nil") = Lnil
-s2l (Ssym s) = Lref s
-s2l Scons (Ssym s)(Scons (Snum e1)(Scons (Snum e2) Snil)) = 
+s2l (Snum n)        = Lnum n
+s2l (Ssym "nil")    = Lnil
+s2l (Ssym s)        = Lref s
+s2l Snil            = Lnil
+s2l (Scons e1 Snil) = s2l e1
+s2l (Scons e1 e2)   = 
+
 -- ¡¡ COMPLETER !!
 s2l se = error ("Malformed Sexp: " ++ (showSexp se))
 
@@ -258,8 +286,9 @@ data Dexp = Dnum Int            -- Constante entière.
 
 -- Le premier argument contient la liste des variables du contexte.
 l2d :: [Var] -> Lexp -> Dexp
-l2d _ (Lnum n) = Dnum n
-l2d _ (Lref "nil") = Dnil
+l2d _ (Lnum n)       = Dnum n
+l2d _ (Lref "nil")   = Dnil
+l2d _ Lnil           = Dnil
 l2d env0Var (Lref s) = Dref (findIndexVar env0Var [0,1..] s)
 -- ¡¡ COMPLETER !!
 
@@ -277,13 +306,15 @@ findIndexVar env0Var (x:xs) identifiant
 
 -- Le premier argument contient la liste des valeurs des variables du contexte,
 -- dans le même ordre que ces variables ont été passées à `l2d`.
+
 env0Val :: [Value]
 env0Val = map snd env0
 
 eval :: [Value] -> Dexp -> Value
-eval _ (Dnum n) = Vnum n
-eval _ (Dnil) = Vnil
+eval _ (Dnum n)       = Vnum n
+eval _ (Dnil)         = Vnil
 eval env0Val (Dref s) = env0Val !! s
+
 -- ¡¡ COMPLETER !!
 
 

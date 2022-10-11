@@ -28,3 +28,8 @@ Sexp x y => x + y
 Lexp Llambda( x (Llambda y (Ladd (Lref "x") (Lref "y"))))
 Dexp Dlambda( Dlambda (Dadd (Dref 2) (Dref 1)))
 eval (+ 2 45) == 2 + 45
+
+[1,2,3,4,[]]
+affichage [1,2,3,4]
+
+(+ 2 3) ==> Scons ()

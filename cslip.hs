@@ -221,7 +221,7 @@ s2l (Ssym "nil")    = Lnil
 s2l (Ssym s)        = Lref s
 s2l Snil            = Lnil
 s2l (Scons e1 Snil) = s2l e1
-s2l (Scons e1 e2)   = 
+s2l (Scons e1 e2)   = s2l (Scons e1 (Scons e2 Snil))
 
 -- ¡¡ COMPLETER !!
 s2l se = error ("Malformed Sexp: " ++ (showSexp se))
@@ -256,6 +256,7 @@ env0 = [("+", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x + y)))),
         ("/", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x `div` y)))),
         ("-", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x - y))))]
 
+-- eval (Vfun f) env = (Ecall (Ecall (Evar "+") (Enum 3)) (Enum 4))
 
 
 ---------------------------------------------------------------------------

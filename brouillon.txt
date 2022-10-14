@@ -33,3 +33,5 @@ eval (+ 2 45) == 2 + 45
 affichage [1,2,3,4]
 
 (+ 2 3) ==> Scons ()
+
+Scons (Ssym "/") (Scons (Scons (Ssym "*") (Scons (Scons (Ssym "-") (Scons (Snum 68) (Scons (Snum 32) Snil))) (Scons (Snum 5) Snil)))(Scons (Snum 9) Snil))

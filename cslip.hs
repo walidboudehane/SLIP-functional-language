@@ -221,10 +221,20 @@ s2l (Ssym "nil")    = Lnil
 s2l (Ssym s)        = Lref s
 s2l Snil            = Lnil
 s2l (Scons e1 Snil) = s2l e1
-s2l (Scons e1 e2)   = s2l (Scons e1 (Scons e2 Snil))
+--s2l (Scons e1 (Scons e2 Snil)) = Lcall (s2l e1) (Lcall (s2l e2) Lnil)
+s2l (Scons e1 e2) = Lcall (s2l e1) (s2l (sexpand e2))
 
 -- ¡¡ COMPLETER !!
 s2l se = error ("Malformed Sexp: " ++ (showSexp se))
+
+-- pour evaluer les paires Scons
+sexpand :: Sexp -> Sexp
+sexpand (Snum n)       = Snum n
+sexpand (Ssym "nil")   = Snil
+sexpand (Ssym s)       = Ssym s
+sexpand Snil           = Snil
+sexpand (Scons e Snil) = e
+sexpand (Scons e1 e2)  = Scons (sexpand e1) (sexpand e2)
 
 ---------------------------------------------------------------------------
 -- Représentation du contexte d'exécution                                --
@@ -291,7 +301,19 @@ l2d _ (Lnum n)       = Dnum n
 l2d _ (Lref "nil")   = Dnil
 l2d _ Lnil           = Dnil
 l2d env0Var (Lref s) = Dref (findIndexVar env0Var [0,1..] s)
+l2d env0Var (Lcall e1 e2) = Dcall (l2d env0Var e1) (l2d env0Var (lexpand e2))
+
+-- l2d (Lcall (Lref "+") (Lcall (Lnum 2) (Lnum 4))) ==> Dcall( Dref 0) (Dcall (Dnum 2) (Dnum 4))
+
 -- ¡¡ COMPLETER !!
+
+lexpand :: Lexp -> Lexp
+lexpand (Lnum n)       = Lnum n
+lexpand (Lref "nil")   = Lnil
+lexpand (Lref s)       = Lref s
+lexpand Lnil           = Lnil
+lexpand (Lcall e Lnil) = e
+lexpand (Lcall e1 e2)  = Lcall (lexpand e1) (lexpand e2)
 
 env0Var :: [Var]
 env0Var = map fst env0
@@ -308,6 +330,14 @@ findIndexVar env0Var (x:xs) identifiant
 -- Le premier argument contient la liste des valeurs des variables du contexte,
 -- dans le même ordre que ces variables ont été passées à `l2d`.
 
+-- #####################################
+-- data Value = Vnum Int
+--            | Vnil
+--            | Vcons Value Value
+--            | Vfun (Value -> Value)
+-- #####################################
+
+
 env0Val :: [Value]
 env0Val = map snd env0
 
@@ -316,6 +346,19 @@ eval _ (Dnum n)       = Vnum n
 eval _ (Dnil)         = Vnil
 eval env0Val (Dref s) = env0Val !! s
 
+eval env0Val (Dcall f arg) =
+    let
+        (Vfun valF) = eval env0Val (dexpand f)
+        evalArg = eval env0Val (dexpand arg)
+    in
+        valF evalArg
+
+dexpand :: Dexp -> Dexp
+dexpand (Dnum n)       = Dnum n
+dexpand (Dref s)       = Dref s
+dexpand Dnil           = Dnil
+dexpand (Dcall e Dnil) = e
+dexpand (Dcall e1 e2)  = Dcall (dexpand e1) (dexpand e2)
 -- ¡¡ COMPLETER !!
 
 

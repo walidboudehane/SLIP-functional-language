@@ -12,10 +12,11 @@
 - comprehension de l'analyseur lexical 
 - comprehension de l'analyseur syntaxique
 - au debut nous avions pas compris la relation entre les Sexp, Lexp, Dexp et eval mais avec plusieur lectures de l'enonce et du code fourni et un peu d'essai et d'erreur on est arrive a comprendre la relation chainee entre eux ...
-
+- on était coincé dans l'elimination du sucre syntaxique et l'implementation de la fonction s2l pendant plusieurs jours jusqu'a a ce qu'on parle avec un demonstrateur qui nous a donné l'idée de créer une fonction auxiliaire qui nous aiderait a faire l'expansion des expressions pour s2l.
 
 **** Problemes rencontrees ***
 - comprehension de la fonction match
+- elimination du sucre syntaxique (expansion des scons)
 
 
 
@@ -23,7 +24,11 @@
 
 - nous n'avions pas remarque que l2d utilisait [Var] et que eval utilisait [Val], nous croyons que c'etait comme nous faisons dans les demo et que nous utilisions des Env directement, mais apres quelques message d'erreur du compilateur nous avons remarque qu'il ne falait pas utiliser des Env dans l2d et eval
 
+- pour un appel de fonction nous étions habitué a le voir dans les demonstations de la forme "Dcall (Dcall (Dref 0) (Dnum 2)) (Dnum 3))" mais dans ce TP la structure des expression était differente "Dcall (Dref 0) (Dcall (Dnum 2) (Dnum 3))" et cela nous a vraiment fait galerer pour l'évaluer.
+
 *** choix qu'on a du faire ***
 - Pour trouver les indices des variables dans l'environement nous avons utilisé une fonction auxiliaire findIndexVar mais nous avons opté a mettre une liste d'entiers prédéfinie pour relier chaque variable a un index (meme si on sait que ce n'est pas vraiment faisable mais c'est tout ce qu'on a trouvé pour le moment histoire de ne pas perdre d'avantage de temps)
+
+- Pour remedier au Probleme d'expansion des expressions dans s2l, nous avons implementé la fonction auxiliaire "sexpand" pour s2l et "lexpand" pour l2d.
 
 *** options qu'on a rejetes ***

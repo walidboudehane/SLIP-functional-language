@@ -1,5 +1,8 @@
 -- TP-2  --- Implantation d'une sorte de Lisp          -*- coding: utf-8 -*-
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Redundant bracket" #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 -- Ce fichier défini les fonctionalités suivantes:
 -- - Analyseur lexical
@@ -221,8 +224,10 @@ s2l (Ssym "nil")    = Lnil
 s2l (Ssym s)        = Lref s
 s2l Snil            = Lnil
 s2l (Scons e1 Snil) = s2l e1
---s2l (Scons e1 (Scons e2 Snil)) = Lcall (s2l e1) (Lcall (s2l e2) Lnil)
+-- lcall ne prends pas n'importe quoi
 s2l (Scons e1 e2) = Lcall (s2l e1) (s2l (sexpand e2))
+s2l (Scons e1 e2) = Ladd (s2l e1) (s2l (sexpand e2))
+
 
 -- ¡¡ COMPLETER !!
 s2l se = error ("Malformed Sexp: " ++ (showSexp se))
@@ -302,6 +307,8 @@ l2d _ (Lref "nil")   = Dnil
 l2d _ Lnil           = Dnil
 l2d env0Var (Lref s) = Dref (findIndexVar env0Var [0,1..] s)
 l2d env0Var (Lcall e1 e2) = Dcall (l2d env0Var e1) (l2d env0Var (lexpand e2))
+l2d env0Var (Ladd e1 e2) = Dadd (l2d env0Var e1) (l2d env0Var (lexpand e2))
+
 
 -- l2d (Lcall (Lref "+") (Lcall (Lnum 2) (Lnum 4))) ==> Dcall( Dref 0) (Dcall (Dnum 2) (Dnum 4))
 
@@ -313,16 +320,26 @@ lexpand (Lref "nil")   = Lnil
 lexpand (Lref s)       = Lref s
 lexpand Lnil           = Lnil
 lexpand (Lcall e Lnil) = e
+lexpand (Ladd e Lnil)  = e
 lexpand (Lcall e1 e2)  = Lcall (lexpand e1) (lexpand e2)
+lexpand (Ladd e1 e2)   = Ladd (lexpand e1) (lexpand e2)
+
 
 env0Var :: [Var]
 env0Var = map fst env0
+
+-- getIndex liste e i = case liste of (x:xs) -> if x == e then i else getIndex xs (i+1)
+{- idx = -1
+findIndexVar [] _ _ = idx
+findIndexVar env0Var (x:xs) idx
+    | x ==  -}
 
 findIndexVar :: [Var] -> [Int] -> Var -> Int
 findIndexVar [] _ _ = -1
 findIndexVar env0Var (x:xs) identifiant
     | env0Var !! x == identifiant = x
     | otherwise = findIndexVar env0Var xs identifiant
+
 ---------------------------------------------------------------------------
 -- Évaluateur                                                            --
 ---------------------------------------------------------------------------
@@ -346,22 +363,18 @@ eval _ (Dnum n)       = Vnum n
 eval _ (Dnil)         = Vnil
 eval env0Val (Dref s) = env0Val !! s
 
-eval env0Val (Dcall f arg) =
+eval env0Val (Dcall (Dref f) arg)=
     let
-        (Vfun valF) = eval env0Val (dexpand f)
-        evalArg = eval env0Val (dexpand arg)
-    in
-        valF evalArg
+        (Vfun valF) = eval env0Val (Dref f)
+        evalArg =  tupleArgs arg
+        (Vfun valF2) = valF (eval env0Val (fst evalArg))
+    in 
+        valF2 (eval env0Val (snd evalArg))
 
-dexpand :: Dexp -> Dexp
-dexpand (Dnum n)       = Dnum n
-dexpand (Dref s)       = Dref s
-dexpand Dnil           = Dnil
-dexpand (Dcall e Dnil) = e
-dexpand (Dcall e1 e2)  = Dcall (dexpand e1) (dexpand e2)
 -- ¡¡ COMPLETER !!
 
-
+tupleArgs :: Dexp -> (Dexp, Dexp)
+tupleArgs (Dcall e1 e2) = (e1,e2)
                   
 ---------------------------------------------------------------------------
 -- Toplevel                                                              --

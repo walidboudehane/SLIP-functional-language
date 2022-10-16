@@ -222,11 +222,13 @@ s2l :: Sexp -> Lexp
 s2l (Snum n)        = Lnum n
 s2l (Snil)    = Lnil
 s2l (Ssym "nil")    = Lnil
-s2l (Ssym "list")   = Lnil
+-- s2l (Ssym "list")   = Lnil
 s2l (Ssym s)        = Lref s
 s2l (Scons e1 Snil) = s2l e1
+
 --s2l (Scons(Ssym "list") (Scons(Ssym "nil") Snil))=Ladd (s2l (Ssym "list")) (s2l (Ssym"nil") )
 -- lcall ne prends pas n'importe quoi
+s2l (Scons (Ssym "list") (Scons e1 e2)) = Ladd  (s2l e1) (s2l (sexpand e2))
 s2l (Scons (Ssym "add") (Scons e1 e2)) = Ladd  (s2l e1) (s2l (sexpand e2)) 
 s2l (Scons e1 e2) = Lcall (s2l e1) (s2l (sexpand e2))
 
@@ -369,7 +371,8 @@ eval _ (Dnum n)       = Vnum n
 eval _ (Dnil)         = Vnil
 eval env0Val (Dref s) = env0Val !! s
 
-eval env0Val (Dadd Dnil Dnil )= eval env0Val (Dnil)
+eval env0Val (Dadd e1 e2) = Vcons (eval env0Val e1) (eval env0Val e2)
+
 
 --eval env0Val (Dadd (Dnum e1) (Dnum e2)) = 
 eval env0Val (Dcall (Dref f) arg)=

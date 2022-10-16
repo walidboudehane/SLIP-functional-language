@@ -31,4 +31,6 @@
 
 - Pour remedier au Probleme d'expansion des expressions dans s2l, nous avons implementé la fonction auxiliaire "sexpand" pour s2l et "lexpand" pour l2d.
 
+- pour evaluer une expression de la forme "Dcall (Dref 0) (Dcall (Dnum 2) (Dnum 3))" nous avons implementé la fonction tupleArgs qui prend un Dexp et retourn une pair de Dexp. On s'est inspiré de la solution de l'exercice de la démo 3 mais nous avons choisi d'utiliser deux Vfuns, Valf et Valf2. Valf evalue la fonction et Valf2 prend evalue Valf et la premier Dexp de la pair et finalement nous evaluons Valf2 avec le deuxieme element de la paire.
+
 *** options qu'on a rejetes ***

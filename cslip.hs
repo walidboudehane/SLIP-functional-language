@@ -222,19 +222,20 @@ s2l :: Sexp -> Lexp
 s2l (Snum n)        = Lnum n
 s2l (Snil)    = Lnil
 s2l (Ssym "nil")    = Lnil
--- s2l (Ssym "list")   = Lnil
+
 s2l (Ssym s)        = Lref s
 s2l (Scons e1 Snil) = s2l e1
 
---s2l (Scons(Ssym "list") (Scons(Ssym "nil") Snil))=Ladd (s2l (Ssym "list")) (s2l (Ssym"nil") )
--- lcall ne prends pas n'importe quoi
+-- add et list
 s2l (Scons (Ssym "list") (Scons e1 e2)) = Ladd  (s2l e1) (s2l (sexpand e2))
 s2l (Scons (Ssym "add") (Scons e1 e2)) = Ladd  (s2l e1) (s2l (sexpand e2)) 
+
+-- lambda 
+-- s2l (Scons (Ssym "fn") (Scons (Scons(Ssym s) Snil) (Scons e Snil))) = Llambda s (s2l (sexpand e))
+s2l (Scons (Ssym "fn") (Scons (Scons(Ssym s1) s2) e)) = Llambda s1 (s2l (Scons s2 (sexpand e)))
+
+-- evaluation de fonction
 s2l (Scons e1 e2) = Lcall (s2l e1) (s2l (sexpand e2))
-
-
-
---(add 1 2) ==> Ladd 1 (Ladd 2 Lnil)
 
 
 -- ¡¡ COMPLETER !!
@@ -279,8 +280,6 @@ env0 = [("+", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x + y)))),
         ("/", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x `div` y)))),
         ("-", Vfun (\ (Vnum x) -> Vfun (\ (Vnum y) -> Vnum (x - y))))]
 
--- eval (Vfun f) env = (Ecall (Ecall (Evar "+") (Enum 3)) (Enum 4))
-
 
 ---------------------------------------------------------------------------
 -- Représentation intermédiaire Dexp                                     --
@@ -314,11 +313,9 @@ l2d _ (Lnum n)       = Dnum n
 l2d _ (Lref "nil")   = Dnil
 l2d _ Lnil           = Dnil
 l2d env0Var (Lref s) = Dref (findIndexVar env0Var [0,1..] s)
-l2d env0Var (Lcall e1 e2) = Dcall (l2d env0Var e1) (l2d env0Var (lexpand e2))
-l2d env0Var (Ladd e1 e2) = Dadd (l2d env0Var e1) (l2d env0Var (lexpand e2))
-
-
--- l2d (Lcall (Lref "+") (Lcall (Lnum 2) (Lnum 4))) ==> Dcall( Dref 0) (Dcall (Dnum 2) (Dnum 4))
+l2d env0Var (Lcall e1 e2)   = Dcall (l2d env0Var e1) (l2d env0Var (lexpand e2))
+l2d env0Var (Ladd e1 e2)    = Dadd (l2d env0Var e1) (l2d env0Var (lexpand e2))
+l2d env0Var (Llambda s e) = (Dlambda (l2d (s:env0Var) e))
 
 -- ¡¡ COMPLETER !!
 
@@ -374,7 +371,7 @@ eval env0Val (Dref s) = env0Val !! s
 eval env0Val (Dadd e1 e2) = Vcons (eval env0Val e1) (eval env0Val e2)
 
 
---eval env0Val (Dadd (Dnum e1) (Dnum e2)) = 
+-- inspire de la demo 3
 eval env0Val (Dcall (Dref f) arg)=
     let
         (Vfun valF) = eval env0Val (Dref f)
@@ -382,6 +379,12 @@ eval env0Val (Dcall (Dref f) arg)=
         (Vfun valF2) = valF (eval env0Val (fst evalArg))
     in 
         valF2 (eval env0Val (snd evalArg))
+
+-- inspire de la correction de l'exercice 3.5
+eval env0Val (Dcall fun actual) =
+    case eval env0Val fun of
+        Vfun f -> f (eval env0Val actual)
+eval env0Val (Dlambda e) = Vfun (\val -> eval ((val):env0Val) e)
 
 -- ¡¡ COMPLETER !!
 

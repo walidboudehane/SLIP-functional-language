@@ -14,10 +14,12 @@
 - au debut nous avions pas compris la relation entre les Sexp, Lexp, Dexp et eval mais avec plusieur lectures de l'enonce et du code fourni et un peu d'essai et d'erreur on est arrive a comprendre la relation chainee entre eux ...
 - on était coincé dans l'elimination du sucre syntaxique et l'implementation de la fonction s2l pendant plusieurs jours jusqu'a a ce qu'on parle avec un demonstrateur qui nous a donné l'idée de créer une fonction auxiliaire qui nous aiderait a faire l'expansion des expressions pour s2l.
 
+- Apres une longue bataille avec les Scons et les parentheses pour eliminer le sucre syntaxique d'une lambda expression, non avons enfin trouvé notre solution dans un simple sexpOf qui nous a éluminé en nous faisant remarquer qu'il y avait deux Scons different apres le "fn" et non pas un Scons imbriqué dans un autre.
+
 **** Problemes rencontrees ***
 - comprehension de la fonction match
 - elimination du sucre syntaxique (expansion des scons)
-
+- ordre de d'appel des fonctions 
 
 
 *** Surprises ***

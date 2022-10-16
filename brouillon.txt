@@ -58,3 +58,13 @@ Dcall (Dref 0) (Dcall (Dnum 2) (Dnum 3))
 =>  valF    = eval env0Val (Dref f) ==> <function>
     evalArg = eval env0Val arg 
 
+
+(fn (x) x) 2
+(fn (var) (definition)) int
+HASKELL :: (\x -> x) 2
+
+(((fn (x) (fn (y) (* x y)))3)5)
+
+ HASKELL :: (\x -> (\y -> * x y)3)5
+
+ (let ((x 2) (y 3)) (+ x y))

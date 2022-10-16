@@ -16,6 +16,8 @@
 
 - Apres une longue bataille avec les Scons et les parentheses pour eliminer le sucre syntaxique d'une lambda expression, non avons enfin trouvé notre solution dans un simple sexpOf qui nous a éluminé en nous faisant remarquer qu'il y avait deux Scons different apres le "fn" et non pas un Scons imbriqué dans un autre.
 
+- nous avons reussi a faire marcher "let" mais uniquement pour une seule declaration de variable
+
 **** Problemes rencontrees ***
 - comprehension de la fonction match
 - elimination du sucre syntaxique (expansion des scons)

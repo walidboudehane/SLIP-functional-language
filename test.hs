@@ -43,3 +43,15 @@ find [] _ = error ("Symbol non trouvé") -- Cas de base
 find ((identifiant, valeur) : restEnv) identifiant'
     | identifiant == identifiant' = valeur
     | otherwise = find restEnv identifiant'
+
+
+((f x y) (* (+ x 1) y)) (f 5 6)
+
+Scons (Ssym "let") (Scons (Scons (Scons (Scons (Ssym "f") (Scons (Ssym "x") (Scons (Ssym "y") Snil))) (Scons (Scons (Ssym "*") (Scons (Scons (Ssym "+") (Scons (Ssym "x") (Scons (Snum 1) Snil))) (Scons (Ssym "y") Snil))) Snil)) Snil) (Scons (Scons (Ssym "f") (Scons (Snum 5) (Scons (Snum 6) Snil))) Snil))
+
+(let ((x 2) (y 3)) (+ x y))
+
+
+(match (add 1 2) (nil 1) ((add x y) (+ x y))) = 
+    
+Scons (Ssym "match") (Scons (Scons (Ssym "add") (Scons (Snum 1) (Scons (Snum 2) Snil))) (Scons (Scons (Ssym "nil") (Scons (Snum 1) Snil)) (Scons (Scons (Scons (Ssym "add") (Scons (Ssym "x") (Scons (Ssym "y") Snil))) (Scons (Scons (Ssym "+") (Scons (Ssym "x") (Scons (Ssym "y") Snil))) Snil)) Snil)))

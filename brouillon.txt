@@ -68,3 +68,6 @@ HASKELL :: (\x -> x) 2
  HASKELL :: (\x -> (\y -> * x y)3)5
 
  (let ((x 2) (y 3)) (+ x y))
+
+ lexp var var lexp lexp = dexp dexp dexp 
+ 

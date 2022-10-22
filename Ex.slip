@@ -1,9 +1,12 @@
 ;;; Quelques exemples.                  -*- mode: lisp-data; coding: utf-8 -*-
 
-2                                       ; ↝ 2
-+                                       ; ↝ <function>
-(+ 2 4)                                 ; ↝ 6
+2                                               ; ↝ 2
++                                               ; ↝ <function>
+(+ 2 4)                                          ; ↝ 6
 
-(add 1 (add 2 (add 3 (add 4))))         ; ↝ [1 2 3 . 4]
+(add 1 (add 2 (add 3 (add 4))))                 ; ↝ [1 2 3 . 4]
 
-(let ((x 2)) (* x x))                   ; ↝ 4 
+(let ((x 2)) (* x x))                           ; ↝ 4 
+
+(match (add 4 3) (nil 5) ((add x y) (* x y)))   ; ↝ 12
+(match nil (nil 5) ((add x y) (* x y)))         ; ↝ 5

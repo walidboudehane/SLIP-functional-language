@@ -70,4 +70,5 @@ HASKELL :: (\x -> x) 2
  (let ((x 2) (y 3)) (+ x y))
 
  lexp var var lexp lexp = dexp dexp dexp 
- 
+
+ list 1 2 3 4 = add 1 add 2 add 3 add 4 nil -> add 1 add 2 [3 4] -> add 1 [2 3 4]

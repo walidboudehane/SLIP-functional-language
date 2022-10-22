@@ -53,5 +53,9 @@ Scons (Ssym "let") (Scons (Scons (Scons (Scons (Ssym "f") (Scons (Ssym "x") (Sco
 
 
 (match (add 1 2) (nil 1) ((add x y) (+ x y))) = 
-    
+
 Scons (Ssym "match") (Scons (Scons (Ssym "add") (Scons (Snum 1) (Scons (Snum 2) Snil))) (Scons (Scons (Ssym "nil") (Scons (Snum 1) Snil)) (Scons (Scons (Scons (Ssym "add") (Scons (Ssym "x") (Scons (Ssym "y") Snil))) (Scons (Scons (Ssym "+") (Scons (Ssym "x") (Scons (Ssym "y") Snil))) Snil)) Snil)))
+
+(match nil (nil 1) ((add x y) (+ x y))) = 
+
+Scons (Ssym "match") (Scons (Ssym "nil") (Scons (Scons (Ssym "nil") (Scons (Snum 1) Snil)) (Scons (Scons (Scons (Ssym "add") (Scons (Ssym "x") (Scons (Ssym "y") Snil))) (Scons (Scons (Ssym "+") (Scons (Ssym "x") (Scons (Ssym "y") Snil))) Snil)) Snil)))

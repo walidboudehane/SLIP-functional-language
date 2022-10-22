@@ -234,9 +234,11 @@ s2l (Scons (Ssym "add") (Scons e1 e2)) = Ladd  (s2l e1) (s2l (sexpand e2))
 s2l (Scons (Ssym "fn") (Scons (Scons(Ssym s) Snil) (Scons e Snil))) = Llambda s (s2l e)
 
 -- let
-s2l (Scons (Ssym "let") (Scons (Scons (Scons (Ssym s) (Scons e1 Snil)) Snil) (Scons e2 Snil))) = 
-   Lfix [(s, (s2l e1))] (s2l e2)
+--s2l (Scons (Ssym "let") (Scons (Scons (Scons (Ssym s) (Scons e1 Snil)) Snil) (Scons e2 Snil))) = 
+--   Lfix [(s, (s2l e1))] (s2l e2)
 
+s2l (Scons (Ssym "let") (Scons (Scons (Scons (Ssym s) (Scons e1 Snil)) Snil) (Scons e2 Snil))) = 
+   Lfix ((s, (s2l (sexpand e1))):letEnv) (s2l e2)
 
 -- evaluation de fonction
 s2l (Scons e1 e2) = Lcall (s2l e1) (s2l (sexpand e2))
@@ -252,6 +254,10 @@ sexpand (Ssym s)       = Ssym s
 sexpand Snil           = Snil
 sexpand (Scons e Snil) = e
 sexpand (Scons e1 e2)  = Scons (sexpand e1) (sexpand e2)
+
+type LetEnv = [(Var, Lexp)]
+letEnv :: LetEnv
+letEnv = []
 
 ---------------------------------------------------------------------------
 -- Représentation du contexte d'exécution                                --
@@ -310,12 +316,15 @@ data Dexp = Dnum Int            -- Constante entière.
           | Dfix [Dexp] Dexp
           deriving (Show, Eq)
 
+env0Var :: [Var]
+env0Var = map fst env0
+
 -- Le premier argument contient la liste des variables du contexte.
 l2d :: [Var] -> Lexp -> Dexp
 l2d _ (Lnum n)              = Dnum n
 l2d _ (Lref "nil")          = Dnil
 l2d _ Lnil                  = Dnil 
-l2d env0Var (Lref s)        = Dref (findIndexVar env0Var [0,1..] s)
+l2d env0Var (Lref s)        = Dref (findIndexVar env0Var index s)
 l2d env0Var (Lcall e1 e2)   = Dcall (l2d env0Var e1) (l2d env0Var (lexpand e2))
 l2d env0Var (Ladd e1 e2)    = Dadd (l2d env0Var e1) (l2d env0Var (lexpand e2))
 l2d env0Var (Llambda s e)   = Dlambda (l2d (s:env0Var) e)
@@ -338,21 +347,15 @@ lexpand (Ladd e Lnil)  = e
 lexpand (Lcall e1 e2)  = Lcall (lexpand e1) (lexpand e2)
 lexpand (Ladd e1 e2)   = Ladd (lexpand e1) (lexpand e2)
 
+index :: Int
+index = 0
 
-env0Var :: [Var]
-env0Var = map fst env0
-
--- getIndex liste e i = case liste of (x:xs) -> if x == e then i else getIndex xs (i+1)
-{- idx = -1
-findIndexVar [] _ _ = idx
-findIndexVar env0Var (x:xs) idx
-    | x ==  -}
-
-findIndexVar :: [Var] -> [Int] -> Var -> Int
+findIndexVar :: [Var] -> Int -> Var -> Int
 findIndexVar [] _ _ = -1
-findIndexVar env0Var (x:xs) identifiant
-    | env0Var !! x == identifiant = x
-    | otherwise = findIndexVar env0Var xs identifiant
+findIndexVar env idx identifiant =
+    case env of (x:xs) -> if x == identifiant 
+                            then idx 
+                            else findIndexVar xs (idx + 1) identifiant
 
 ---------------------------------------------------------------------------
 -- Évaluateur                                                            --

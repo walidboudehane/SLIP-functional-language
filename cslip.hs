@@ -3,6 +3,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Redundant bracket" #-}
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
 -- Ce fichier défini les fonctionalités suivantes:
 -- - Analyseur lexical
@@ -178,31 +179,6 @@ showSexp e = showSexp' e ""
 -- Représentation intermédiaire L(ambda)exp(ression)                     --
 ---------------------------------------------------------------------------
 
--- #################################################
---data Sexp = Snil                        -- La liste vide
---          | Scons Sexp Sexp             -- Une paire
---          | Ssym String                 -- Un symbole
---          | Snum Int                    -- Un entier
-          -- Génère automatiquement un pretty-printer et une fonction de
-          -- comparaison structurelle.
---          deriving (Show, Eq)
--- ###################################################
--- Exemples:
--- (+ 2 3) == (+ . (2 . (3 . ())))
---         ==> Scons (Ssym "+")
---                   (Scons (Snum 2)
---                          (Scons (Snum 3) Snil))
---
--- (/ (* (- 68 32) 5) 9)
---     ==>
--- Scons (Ssym "/")
---       (Scons (Scons (Ssym "*")
---                     (Scons (Scons (Ssym "-")
---                                   (Scons (Snum 68)
---                                          (Scons (Snum 32) Snil)))
---                            (Scons (Snum 5) Snil)))
---              (Scons (Snum 9) Snil))
-
 type Var = String
 
 data Lexp = Lnum Int            -- Constante entière.
@@ -220,7 +196,7 @@ data Lexp = Lnum Int            -- Constante entière.
 -- Première passe simple qui analyse un Sexp et construit une Lexp équivalente.
 s2l :: Sexp -> Lexp
 s2l (Snum n)        = Lnum n
-s2l (Snil)    = Lnil
+s2l Snil    = Lnil
 s2l (Ssym "nil")    = Lnil
 
 s2l (Ssym s)        = Lref s
@@ -231,8 +207,11 @@ s2l (Scons (Ssym "nil") e1) = s2l e1
 
 s2l (Scons (Ssym "add") (Scons e1 e2)) = Ladd (s2l e1) (s2l e2)
 
-s2l (Scons (Ssym "list") e) = Ladd (s2l e) Lnil
-
+-- s2l (Scons (Ssym "list") e) = Ladd (s2l e) Lnil
+s2l (Scons (Ssym "list") (Scons e1 e2)) =
+    case e2 of 
+        Snil -> Ladd (s2l e1) Lnil
+        _    -> Ladd (s2l e1) (s2l (sexpList e2))
 
 -- lambda 
 s2l (Scons (Ssym "fn") (Scons (Scons(Ssym s) Snil) (Scons e Snil))) = Llambda s (s2l e)
@@ -242,7 +221,7 @@ s2l (Scons (Ssym "fn") (Scons (Scons(Ssym s) Snil) (Scons e Snil))) = Llambda s 
 s2l (Scons (Ssym "let") (Scons (Scons (Scons (Ssym s) (Scons e1 Snil)) Snil) (Scons e2 Snil))) = 
    Lfix [(s, (s2l e1))] (s2l e2)
 
-s2l (Scons (Ssym "let") (Scons (Scons (Scons (Ssym x) (Scons e1 Snil)) (Scons (Scons (Ssym y) (Scons e2 Snil)) Snil)) (Scons e3 Snil))) = Lfix [(x, (s2l e1)), (y, (s2l e2))] (s2l e3)
+s2l (Scons (Ssym "let") (Scons (Scons (Scons (Ssym x) (Scons e1 Snil)) (Scons (Scons (Ssym y) (Scons e2 Snil)) Snil)) e3)) = Lfix [(x, (s2l e1)), (y, (s2l e2))] (s2l e3)
 
 -- match
 s2l (Scons (Ssym "match") (Scons e1 (Scons (Scons (Ssym "nil") e2) (Scons (Scons (Scons (Ssym "add") (Scons (Ssym x) (Scons (Ssym y) Snil))) e3) Snil)))) = Lmatch (s2l (sexpand e1)) x y (s2l (sexpand e2)) (s2l (sexpand e3))
@@ -250,7 +229,7 @@ s2l (Scons (Ssym "match") (Scons e1 (Scons (Scons (Ssym "nil") e2) (Scons (Scons
 -- evaluation de fonction
 s2l (Scons e1 e2) = Lcall (s2l e1) (s2l (sexpand e2))
 
--- ¡¡ COMPLETER !!
+
 s2l se = error ("Malformed Sexp: " ++ (showSexp se))
 
 -- pour evaluer les paires Scons
@@ -262,9 +241,8 @@ sexpand Snil           = Snil
 sexpand (Scons e Snil) = e
 sexpand (Scons e1 e2)  = Scons (sexpand e1) (sexpand e2)
 
-{- type LetEnv = [(Var, Lexp)]
-letEnv :: LetEnv
-letEnv = [] -}
+sexpList ::Sexp -> Sexp
+sexpList e= (Scons(Ssym "list") e)
 
 ---------------------------------------------------------------------------
 -- Représentation du contexte d'exécution                                --
@@ -332,28 +310,19 @@ l2d :: [Var] -> Lexp -> Dexp
 l2d _ (Lnum n)              = Dnum n
 l2d _ (Lref "nil")          = Dnil
 l2d _ Lnil                  = Dnil 
-l2d env0Var (Lref s)        = Dref (findIndexVar env0Var index s)
-l2d env0Var (Lcall e1 e2)   = Dcall (l2d env0Var e1) (l2d env0Var (lexpand e2))
-l2d env0Var (Ladd e1 e2)    = Dadd (l2d env0Var e1) (l2d env0Var (lexpand e2))
-l2d env0Var (Llambda s e)   = Dlambda (l2d (s:env0Var) e)
+l2d env (Lref s)        = Dref (findIndexVar env index s)
+l2d env(Lcall e1 e2)   = Dcall (l2d env e1) (l2d env (lexpand e2))
+l2d env (Ladd e1 e2)    = Dadd (l2d env e1) (l2d env (lexpand e2))
+l2d env (Llambda s e)   = Dlambda (l2d (s:env) e)
 
-l2d env0Var (Lfix [(s, e1)] e2) =
+l2d env (Lfix [(s, e1)] e2) =
 
-    let letEnv = ((fst (head [(s, e1)]) : env0Var))
+    let letEnv = ((fst (head [(s, e1)]) : env))
         e1'    = (snd (head [(s, e1)]))
 
     in  Dfix ([l2d letEnv e1']) (l2d letEnv e2)
 
-{- l2d env0Var (Lfix [(s1, e1),(s2,e2)] e3) =
-
-    let fixEnv = [(s1, e1),(s2,e2)]
-        if (s1 elem env0var) && (s2 elem env0var)  then letEnv = ((map fst fixEnv) ++ env0Var)
-        e    = map snd fixEnv
-        e1'  = head e
-        e2'  = head (tail e)
-    in  Dfix ([(l2d letEnv e1'), (l2d letEnv e2')]) (l2d letEnv e3) -}
-
-l2d env0Var (Lmatch e1 s1 s2 e2 e3) = Dmatch (l2d env0Var e1) (l2d env0Var e2) (l2d (s2:s1:env0Var) e3)
+l2d env (Lmatch e1 s1 s2 e2 e3) = Dmatch (l2d env e1) (l2d env e2) (l2d (s2:s1:env) e3)
 
 -- ¡¡ COMPLETER !!
 
@@ -398,37 +367,38 @@ env0Val = map snd env0
 eval :: [Value] -> Dexp -> Value
 eval _ (Dnum n)       = Vnum n
 eval _ (Dnil)         = Vnil
-eval env0Val (Dref s) = env0Val !! s
+eval envVal (Dref s) = envVal !! s
 
-eval env0Val (Dadd e1 e2) = Vcons (eval env0Val e1) (eval env0Val e2)
+eval envVal (Dadd e1 e2) = Vcons (eval envVal e1) (eval envVal e2)
 
 
 -- inspire de la demo 3
-eval env0Val (Dcall (Dref f) arg)=
+eval envVal (Dcall (Dref f) arg)=
     let
-        (Vfun valF) = eval env0Val (Dref f)
+        (Vfun valF) = eval envVal (Dref f)
         evalArg =  tupleArgs arg
-        (Vfun valF2) = valF (eval env0Val (fst evalArg))
+        (Vfun valF2) = valF (eval envVal (fst evalArg))
     in 
-        valF2 (eval env0Val (snd evalArg))
+        valF2 (eval envVal (snd evalArg))
 
 -- inspire de la correction de l'exercice 3.5
-eval env0Val (Dcall fun actual) =
-    case eval env0Val fun of
-        Vfun f -> f (eval env0Val actual)
+eval envVal (Dcall fun actual) =
+    case eval envVal fun of
+        Vfun f -> f (eval envVal actual)
 
 -- lambda
-eval env0Val (Dlambda e) = Vfun (\val -> eval ((val):env0Val) e)
+eval envVal (Dlambda e) = Vfun (\val -> eval ((val):envVal) e)
 
 -- let
-eval env0Val (Dfix [e1] e2) = eval ((eval env0Val e1):env0Val) e2
+eval envVal (Dfix [e1] e2) = eval ((eval envVal e1):envVal) e2
 -- eval env0Val (Dfix [e1, e2] e3) = eval ((eval env0Val e1):(eval env0Val e2):env0Val) e3
 
 -- match
-eval env0Val (Dmatch e1 e2 e3) = case e1 of 
-                                    Dnil -> (eval env0Val e2)
-                                    _    -> (eval ((addToVal e1) ++ env0Val) e3)
+eval envVal (Dmatch e1 e2 e3) = case e1 of 
+                                    Dnil -> (eval envVal e2)
+                                    _    -> (eval ((addToVal e1) ++ envVal) e3)
 
+addToVal :: Dexp -> [Value]
 addToVal (Dadd e1 e2) = [(eval env0Val e2), (eval env0Val e1)] 
 
 -- ¡¡ COMPLETER !!

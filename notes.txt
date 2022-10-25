@@ -5,6 +5,12 @@
 ################## Partie importantes du code ########################
 
 
+######################## RAPPORT ################################### 
+
+
+- Comprenhesion de la donnée
+    Durant les premiers jours nous avons passé la plupart de notre
+
 
 ################## Ecrire un rapport ##################################
 
@@ -21,7 +27,7 @@
 **** Problemes rencontrees ***
 - comprehension de la fonction match
 - elimination du sucre syntaxique (expansion des scons)
-- ordre de d'appel des fonctions 
+- ordre de d'appel des fonctions
 
 
 *** Surprises ***
